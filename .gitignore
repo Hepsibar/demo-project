@@ -15,3 +15,8 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Dev server artifacts (scripts/dev.ps1 · dev.sh)
+scripts/.dev.pid
+scripts/.dev.log
+scripts/.dev.err.log
