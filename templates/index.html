@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>채팅 로그 요약 · 액션 아이템</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Segoe UI", "Noto Sans KR", sans-serif;
+      max-width: 820px;
+      margin: 40px auto;
+      padding: 0 20px;
+      color: #222;
+      line-height: 1.6;
+    }
+    h1 { font-size: 24px; margin-bottom: 4px; }
+    .sub { color: #666; margin-bottom: 32px; }
+    .card {
+      border: 1px solid #e2e2e2;
+      border-radius: 10px;
+      padding: 24px;
+      background: #fafafa;
+      margin-bottom: 24px;
+    }
+    input[type=file] { font-size: 15px; }
+    button {
+      margin-top: 14px;
+      padding: 10px 22px;
+      border: 0;
+      border-radius: 8px;
+      background: #2d6cdf;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    button:hover { background: #1f58c1; }
+    .meta {
+      font-size: 13px;
+      color: #666;
+      background: #eef3fb;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+    }
+    .error {
+      background: #ffecec;
+      border: 1px solid #ffb3b3;
+      color: #a40000;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .result { padding: 24px 28px; background: white; border: 1px solid #e2e2e2; border-radius: 10px; }
+    .result h2 { font-size: 19px; margin-top: 24px; }
+    .result h2:first-child { margin-top: 0; }
+    .result ul, .result ol { padding-left: 22px; }
+    .result li { margin: 6px 0; }
+    code { background: #f0f0f0; padding: 1px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>채팅 로그 요약 & 액션 아이템</h1>
+  <div class="sub">카카오톡 CSV를 올리면 요약과 방장이 할 일을 뽑아드려요.</div>
+
+  <form class="card" action="/analyze" method="post" enctype="multipart/form-data">
+    <label>CSV 파일 선택</label><br/>
+    <input type="file" name="file" accept=".csv" required />
+    <br/>
+    <button type="submit">분석하기</button>
+  </form>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  {% if result_html %}
+    <div class="meta">
+      <strong>{{ filename }}</strong> · 전체 메시지 {{ total_messages }}개
+      {% if truncated %}· 최근 {{ used_messages }}개만 분석됨{% endif %}
+    </div>
+    <div class="result">
+      {{ result_html | safe }}
+    </div>
+  {% endif %}
+</body>
+</html>

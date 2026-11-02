@@ -3,6 +3,10 @@
 .env.*
 !.env.example
 
+# Python
+__pycache__/
+*.py[cod]
+
 # OS
 .DS_Store
 Thumbs.db
