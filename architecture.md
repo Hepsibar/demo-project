@@ -16,6 +16,12 @@ demo_project/
 │   └── index.html     # 업로드 폼 + 결과 렌더링 (Jinja2)
 ├── requirements.txt
 ├── .env               # ANTHROPIC_API_KEY (python-dotenv로 로드)
+├── fixtures/
+│   └── sample_kakao.csv  # 스모크 테스트용 샘플 입력
+├── scripts/
+│   ├── dev.ps1        # 개발 서버 헬퍼 (PowerShell): start/stop/status/restart/logs
+│   ├── dev.sh         # 개발 서버 헬퍼 (Bash/WSL/Linux)
+│   └── smoke.py       # E2E 스모크 테스트 (two-section 응답 계약 검증)
 └── api/
     └── CLAUDE.md      # 라우트/Claude 호출 세부 가이드
 ```
