@@ -1,0 +1,14 @@
+# 변경 시 리뷰어를 자동 지정한다 (independent critic).
+# GitHub 핸들이 유효해야 실제로 리뷰 요청이 붙는다 — 필요 시 아래 소유자를 교체하세요.
+
+# 기본 소유자
+*                     @ksy-su
+
+# 에이전트가 의존하는 계약 문서 — 변경 시 특히 신중히 리뷰
+/CLAUDE.md            @ksy-su
+/api/CLAUDE.md        @ksy-su
+/architecture.md      @ksy-su
+/docs/adr/            @ksy-su
+
+# 모델 입력 경로·응답 계약의 핵심
+/main.py              @ksy-su

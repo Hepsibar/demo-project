@@ -1,0 +1,22 @@
+name: docs-paths
+
+# 문서 경로 검증을 머지 시점에 자동 실행하는 백스톱.
+# 로컬 pre-push 훅(scripts/hooks/pre-push)은 clone마다 수동 활성화가 필요하지만,
+# 이 워크플로는 PR·main push마다 무조건 돌아 stale/hallucinated 참조를 차단한다.
+# Claude 호출이 없어 비용·시크릿이 필요 없다.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check-paths:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate doc path references
+        run: python scripts/check_paths.py

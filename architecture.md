@@ -31,6 +31,40 @@ demo_project/
 - **LLM 레이어**: `anthropic.Anthropic()` 클라이언트를 모듈 로드 시점에 생성합니다. 상수 `MODEL`과 `SYSTEM_PROMPT`가 `main.py` 상단에 모여 있어, 모델/프롬프트 변경 지점이 한 곳입니다.
 - **렌더링 레이어**: 모델 응답의 마크다운을 `markdown.markdown`으로 HTML로 변환하고 템플릿에 `| safe`로 주입합니다. 모델 출력을 신뢰된 HTML로 다루므로, 모델 입력 경로를 바꿀 때 이 가정을 유지해야 합니다.
 
+## 모듈 의존성 (Cross-module dependencies)
+
+```mermaid
+graph TD
+    browser["사용자 브라우저"]
+    main["main.py<br/>FastAPI · 라우트 · CSV 파서 · Claude 호출"]
+    tpl["templates/index.html<br/>Jinja2 (| safe 렌더)"]
+    claude["Claude API<br/>claude-opus-5-5"]
+    env[".env<br/>ANTHROPIC_API_KEY"]
+    scripts["scripts/<br/>dev · smoke · check_paths"]
+    fixtures["fixtures/sample_kakao.csv"]
+
+    browser -->|"CSV 업로드 (POST /analyze)"| main
+    main -->|"TemplateResponse"| tpl
+    tpl -->|"HTML 200"| browser
+    env -.->|"import 시 로드"| main
+    main -->|"messages.create"| claude
+    scripts -->|"uvicorn main:app (dev)"| main
+    scripts -->|"POST /analyze (smoke)"| main
+    fixtures -.->|"스모크 입력"| scripts
+```
+
+변경 영향 분석을 위한 모듈 간 결합 지점:
+
+| From | To | 결합(계약) | 깨지면 |
+|------|----|-----------|--------|
+| `main.py` | `templates/index.html` | 템플릿 변수명(`result_html`·`error`·`truncated`·`filename`·`total_messages`·`used_messages`)과 `## 대화 요약`/`## 액션 아이템` 2섹션 구조 | UI 렌더 깨짐·`.result h2` 스타일 전제 붕괴 → [`docs/adr/0001-two-section-prompt-contract.md`](docs/adr/0001-two-section-prompt-contract.md) |
+| `main.py` | Claude API | `MODEL`·`SYSTEM_PROMPT`·`max_tokens`·`thinking` 파라미터 | 응답 계약·비용·지연 변동 → [`api/CLAUDE.md`](api/CLAUDE.md) |
+| `.env` | `main.py` | `ANTHROPIC_API_KEY` (import 시점 필요) | 서버 기동 실패 |
+| `scripts/smoke.py` | `main.py`(`/analyze`) + `fixtures/sample_kakao.csv` | 2섹션 응답 계약 | 계약 변경 시 스모크 체크도 갱신 필요 |
+| `scripts/check_paths.py` | 추적 `*.md` | 문서 내 경로 참조 존재 | stale 참조 push 차단 |
+
+설계 결정의 "왜"는 [`docs/adr/`](docs/adr/README.md)에 기록되어 있습니다.
+
 ## 요청 흐름
 
 ```
