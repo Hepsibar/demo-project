@@ -1,0 +1,45 @@
+name: smoke
+
+# /analyze 2섹션 응답 계약을 실제 Claude 호출로 검증하는 E2E 스모크.
+#
+# 비용 주의: 이 워크플로는 **실제 Claude API를 호출해 과금**된다. 그래서 PR마다 자동 실행하지
+# 않고, 수동 트리거(workflow_dispatch)로만 돈다. ANTHROPIC_API_KEY 리포지토리 시크릿이 필요하다.
+#
+# PR마다 자동 실행으로 바꾸려면 아래 on: 에 pull_request: 를 추가한다(모든 PR이 과금됨에 유의).
+
+on:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Guard — require API key
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::ANTHROPIC_API_KEY secret is not set — smoke test needs it (real Claude call)."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # 서버 기동과 스모크를 한 step에서 실행한다 — Actions는 step마다 셸이 분리돼
+      # 백그라운드 프로세스가 step 경계를 넘어 살아남지 못하기 때문.
+      - name: Start server and run smoke contract test
+        run: |
+          python -m uvicorn main:app --port 8000 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null' EXIT
+          for i in $(seq 1 20); do
+            curl -sf http://127.0.0.1:8000/ >/dev/null && break
+            sleep 0.5
+          done
+          python scripts/smoke.py

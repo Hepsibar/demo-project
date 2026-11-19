@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# Pre-push guard: block pushes that introduce stale/hallucinated doc paths.
+# Enable (per clone):  git config core.hooksPath scripts/hooks
+# Bypass (rarely):     git push --no-verify
+exec python scripts/check_paths.py

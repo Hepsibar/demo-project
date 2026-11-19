@@ -20,3 +20,6 @@ Thumbs.db
 scripts/.dev.pid
 scripts/.dev.log
 scripts/.dev.err.log
+
+# Eval run outputs (evals/run_evals.py)
+evals/results/
